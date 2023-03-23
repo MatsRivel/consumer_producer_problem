@@ -41,7 +41,7 @@ impl<T> BoundedQueue<T> {
 }
 
 const N_PRODUCTION: i32 = 10;
-const N_CAPACITY: usize = 9;
+const N_CAPACITY: usize = 3;
 fn main() {
     // Goal: To implement the solution to the consumer - producer problem.
     // Queue can hold up to 10 elements at a time.
