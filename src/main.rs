@@ -66,7 +66,7 @@ fn main() {
             match guard.push(i){
                 Some(_) => {                             // Push successfull. 
                             push_queue.2.notify_one();   // Notify pull that at least one element is available.
-                            println!("Pushed {}\t|",i);
+                            println!("|\tPushed {}\t |\t\t\t\t |",i);
                             i+=1;
                             continue;                    // Jump to the start of the loop again.
                         },   
@@ -74,7 +74,7 @@ fn main() {
             }
             push_queue.2.notify_one();                   // Notify pull that at least one element is available.
             
-            println!("Push is waiting...");
+            println!("|\tPush waiting |\t\t\t\t |");
             match push_queue.1.wait(guard){              // Waiting for notification of available space.
                 Ok(_) => {},                             // No issue, go to beginning of loop.           
                 Err(s) => panic!("{}",s),   // TODO: Handle error better.
@@ -95,7 +95,7 @@ fn main() {
             match guard.pop(){
                 Some(v) => {                        // Pull successfull. 
                             pull_queue.1.notify_one();   // Notify push that at least one space is available.
-                            println!("\t\t\t|\tPulled {}",v);
+                            println!("|\t\t\t\t |\tPulled {}\t |",v);
                             i+=1;
                             continue;
                         },   
@@ -103,7 +103,7 @@ fn main() {
             }
             pull_queue.1.notify_one();                   // Notify push that at least one space is available.
             
-            println!("\t\t\t|\tPull is waiting...");
+            println!("|\t\t\t\t |\tPull waiting |");
             match pull_queue.2.wait(guard){              // Waiting for notification of available space.
                 Ok(_) => {},                             // No issue, go to beginning of loop.                                            
                 Err(s) => panic!("{}",s),   // TODO: Handle error better.
