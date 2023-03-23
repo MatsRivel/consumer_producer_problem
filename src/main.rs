@@ -40,8 +40,8 @@ impl<T> BoundedQueue<T> {
     }
 }
 
-const N_PRODUCTION: i32 = 10;
-const N_CAPACITY: usize = 3;
+const N_PRODUCTION: i32 = 15;
+const N_CAPACITY: usize = 4;
 fn main() {
     // Goal: To implement the solution to the consumer - producer problem.
     // Queue can hold up to 10 elements at a time.
@@ -54,7 +54,9 @@ fn main() {
     let queue = Arc::new((Mutex::new(BoundedQueue::<i32>::new(N_CAPACITY)), Condvar::new(), Condvar::new()) );
     let push_queue = queue.clone();
     let pull_queue = queue.clone();
-    
+    println!("__________________________________");
+    println!("|\tPush Column\t |\tPull Column\t |");
+    println!("|________________|_______________|");
     let push_handle = thread::spawn(move || {
         let mut i = 0;
         while i < N_PRODUCTION {
@@ -66,7 +68,7 @@ fn main() {
             match guard.push(i){
                 Some(_) => {                             // Push successfull. 
                             push_queue.2.notify_one();   // Notify pull that at least one element is available.
-                            println!("|\tPushed {}\t |\t\t\t\t |",i);
+                            println!("|\t {}-->Q\t\t |\t\t\t\t |",i);
                             i+=1;
                             continue;                    // Jump to the start of the loop again.
                         },   
@@ -74,13 +76,14 @@ fn main() {
             }
             push_queue.2.notify_one();                   // Notify pull that at least one element is available.
             
-            println!("|\tPush waiting |\t\t\t\t |");
+            println!("|\tWaiting...\t |\t\t\t\t |");
             match push_queue.1.wait(guard){              // Waiting for notification of available space.
                 Ok(_) => {},                             // No issue, go to beginning of loop.           
                 Err(s) => panic!("{}",s),   // TODO: Handle error better.
             }
         }
         push_queue.2.notify_all();
+        println!("|\tCompleted!\t |\t\t\t\t |");
         
     });
 
@@ -95,7 +98,7 @@ fn main() {
             match guard.pop(){
                 Some(v) => {                        // Pull successfull. 
                             pull_queue.1.notify_one();   // Notify push that at least one space is available.
-                            println!("|\t\t\t\t |\tPulled {}\t |",v);
+                            println!("|\t\t\t\t |\t Q-->{}\t\t |",v);
                             i+=1;
                             continue;
                         },   
@@ -103,13 +106,14 @@ fn main() {
             }
             pull_queue.1.notify_one();                   // Notify push that at least one space is available.
             
-            println!("|\t\t\t\t |\tPull waiting |");
+            println!("|\t\t\t\t |\t Waiting...\t |");
             match pull_queue.2.wait(guard){              // Waiting for notification of available space.
                 Ok(_) => {},                             // No issue, go to beginning of loop.                                            
                 Err(s) => panic!("{}",s),   // TODO: Handle error better.
             }
         }
         pull_queue.1.notify_all();
+        println!("|\t\t\t\t |\t Completed!\t |");
 
     });
 
@@ -126,6 +130,7 @@ fn main() {
                 },
         Err(_) => print!("\n>>> Producer panicked! <<<\n"),
     }
+    println!("|________________|_______________|");
     let final_size = queue.0.lock().unwrap().queue.len(); 
     match final_size{
         0usize => {
