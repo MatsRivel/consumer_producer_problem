@@ -4,7 +4,6 @@ use std::time::Duration;
 use std::{collections::VecDeque, thread, thread::sleep};
 use std::sync::{Arc,Mutex, Condvar};
 
-#[allow(dead_code)]                                              // TODO: Remove this.
 struct BoundedQueue<T> {
     queue: VecDeque<T>,
     capacity: usize,
@@ -67,17 +66,17 @@ fn main() {
             match guard.push(i){
                 Some(_) => {                             // Push successfull. 
                             push_queue.2.notify_one();   // Notify pull that at least one element is available.
-                            println!("Pushed {}",i);
+                            println!("Pushed {}\t|",i);
                             i+=1;
                             continue;                    // Jump to the start of the loop again.
                         },   
                 None => {},                              // Pushing to full queue. Moving on to wait section.
             }
-            push_queue.2.notify_one();           // Notify pull that at least one element is available.
+            push_queue.2.notify_one();                   // Notify pull that at least one element is available.
             
             println!("Push is waiting...");
-            match push_queue.1.wait(guard){      // Waiting for notification of available space.
-                Ok(_) => {},                     // No issue, go to beginning of loop.           
+            match push_queue.1.wait(guard){              // Waiting for notification of available space.
+                Ok(_) => {},                             // No issue, go to beginning of loop.           
                 Err(s) => panic!("{}",s),   // TODO: Handle error better.
             }
         }
@@ -96,17 +95,17 @@ fn main() {
             match guard.pop(){
                 Some(v) => {                        // Pull successfull. 
                             pull_queue.1.notify_one();   // Notify push that at least one space is available.
-                            println!("\t\tPulled {}",v);
+                            println!("\t\t\t|\tPulled {}",v);
                             i+=1;
                             continue;
                         },   
                 None => {},                              // Pulling from empty queue. Moves on to wait section
             }
-            pull_queue.1.notify_one();           // Notify push that at least one space is available.
+            pull_queue.1.notify_one();                   // Notify push that at least one space is available.
             
-            println!("Pull is waiting...");
-            match pull_queue.2.wait(guard){      // Waiting for notification of available space.
-                Ok(_) => {},                     // No issue, go to beginning of loop.                                            
+            println!("\t\t\t|\tPull is waiting...");
+            match pull_queue.2.wait(guard){              // Waiting for notification of available space.
+                Ok(_) => {},                             // No issue, go to beginning of loop.                                            
                 Err(s) => panic!("{}",s),   // TODO: Handle error better.
             }
         }
